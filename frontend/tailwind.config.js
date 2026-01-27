@@ -70,27 +70,7 @@ module.exports = {
         'card-hover': '0 10px 40px rgba(0, 0, 0, 0.12)',
         'navbar': '0 2px 10px rgba(0, 0, 0, 0.05)',
       },
-      typography: {
-        DEFAULT: {
-          css: {
-            maxWidth: '65ch',
-            color: '#334155',
-            a: {
-              color: '#0ea5e9',
-              '&:hover': {
-                color: '#0284c7',
-              },
-            },
-            'h1, h2, h3, h4': {
-              color: '#0f172a',
-              fontWeight: '700',
-            },
-          },
-        },
-      },
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [],
 }
