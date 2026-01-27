@@ -33,7 +33,7 @@ export default function RootLayout({
                   <a href="#" className="text-gray-700 hover:text-primary-600 font-medium">Categories</a>
                   <a href="#" className="text-gray-700 hover:text-primary-600 font-medium">About</a>
                 </nav>
-                <button className="btn-primary px-6 py-2 rounded-lg">Subscribe</button>
+                <button className="btn-primary rounded-lg">Subscribe</button>
               </div>
             </div>
           </header>
