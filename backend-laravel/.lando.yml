@@ -1,0 +1,21 @@
+name: digital-publishing-backend
+recipe: laravel
+config:
+  php: '8.2'
+  webroot: public
+  database: mariadb:10.9
+
+services:
+  appserver:
+    type: php
+    via: fpm
+
+tooling:
+  artisan:
+    service: appserver
+  composer:
+    service: appserver
+  mysql:
+    service: database
+  npm:
+    service: appserver
