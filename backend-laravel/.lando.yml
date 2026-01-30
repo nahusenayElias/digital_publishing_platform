@@ -7,8 +7,9 @@ config:
 
 services:
   appserver:
-    type: php
+    type: php:8.2
     via: fpm
+    xdebug: true
 
 tooling:
   artisan:
