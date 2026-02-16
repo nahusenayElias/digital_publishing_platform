@@ -3,64 +3,57 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AuthorController extends Controller
 {
+    /**
+     * PUBLIC: list all authors with their published article count
+     */
     public function index()
     {
-        $authors = [
-            [
-                'id' => 1,
-                'name' => 'John Doe',
-                'slug' => 'john-doe',
-                'bio' => 'Senior backend developer with 8+ years of experience in Laravel and API development.',
-                'avatar' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
-                'article_count' => 12,
-                'expertise' => ['Laravel', 'API Development', 'PostgreSQL']
-            ],
-            [
-                'id' => 2,
-                'name' => 'Jane Smith',
-                'slug' => 'jane-smith',
-                'bio' => 'Frontend engineer specializing in React and Next.js with a focus on performance optimization.',
-                'avatar' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jane',
-                'article_count' => 8,
-                'expertise' => ['React', 'Next.js', 'TypeScript']
-            ],
-            [
-                'id' => 3,
-                'name' => 'Alex Johnson',
-                'slug' => 'alex-johnson',
-                'bio' => 'Full-stack developer passionate about teaching and creating comprehensive tutorials.',
-                'avatar' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-                'article_count' => 15,
-                'expertise' => ['Full Stack', 'Tutorials', 'DevOps']
-            ],
-        ];
+        $authors = User::withCount(['articles' => function($query) {
+                $query->where('status', 'published');
+            }])
+            ->having('articles_count', '>', 0)
+            ->get()
+            ->map(function($author) {
+                return [
+                    'id' => $author->id,
+                    'name' => $author->name,
+                    'email' => $author->email,
+                    'articles_count' => $author->articles_count,
+                    'joined_at' => $author->created_at->format('Y-m-d')
+                ];
+            });
 
-        return response()->json(['data' => $authors]);
+        return response()->json([
+            'data' => $authors
+        ]);
     }
 
-    public function show($slug)
+    /**
+     * PUBLIC: view single author with their published articles
+     */
+    public function show($id)
     {
-        $author = [
-            'id' => 1,
-            'name' => 'John Doe',
-            'slug' => $slug,
-            'bio' => 'Senior backend developer with 8+ years of experience in Laravel and API development. Passionate about clean code and scalable architecture.',
-            'avatar' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
-            'article_count' => 12,
-            'total_views' => 12500,
-            'join_date' => '2022-03-15',
-            'expertise' => ['Laravel', 'API Development', 'PostgreSQL', 'Redis', 'Docker'],
-            'social_links' => [
-                'twitter' => 'https://twitter.com/johndoe',
-                'github' => 'https://github.com/johndoe',
-                'linkedin' => 'https://linkedin.com/in/johndoe',
-            ]
-        ];
+        $author = User::with(['articles' => function($query) {
+                $query->where('status', 'published')
+                      ->with('category')
+                      ->latest();
+            }])
+            ->findOrFail($id);
 
-        return response()->json(['data' => $author]);
+        return response()->json([
+            'data' => [
+                'id' => $author->id,
+                'name' => $author->name,
+                'email' => $author->email,
+                'joined_at' => $author->created_at->format('Y-m-d'),
+                'articles' => $author->articles,
+                'total_articles' => $author->articles->count()
+            ]
+        ]);
     }
 }
