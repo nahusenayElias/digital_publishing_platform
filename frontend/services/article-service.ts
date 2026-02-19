@@ -1,22 +1,88 @@
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from './api';
 
-export class ArticleService {
-  // articles
-  static async getAll() {
-    const res = await apiFetch('/api/articles');
-    return Array.isArray(res) ? res : res.data ?? [];
-  }
+export const ArticleService = {
+  /* =======================
+     PUBLIC (READ-ONLY)
+  ======================= */
 
-  // fetches featured articles
-  static async getFeatured() {
-    const articles = await this.getAll();
+  async getFeatured() {
+    const res = await apiFetch('/api/articles?status=published&featured=1');
+    return Array.isArray(res) ? res : res.data || [];
+  },
 
-    // If backend supports "featured" flag
-    return articles.filter((a: any) => a.featured === true);
-  }
+  async published() {
+    const res = await apiFetch('/api/articles?status=published');
+    return Array.isArray(res) ? res : res.data || [];
+  },
 
-  // single article by slug
-  static async getBySlug(slug: string) {
-    return apiFetch(`/api/articles/${slug}`);
-  }
-}
+  async getById(id: number) {
+    const res = await apiFetch(`/api/articles/${id}`);
+    return res.data || res;
+  },
+
+  /* =======================
+     AUTHOR (AUTHENTICATED)
+  ======================= */
+
+  async myArticles() {
+    const res = await apiFetch('/api/articles/me');
+    return Array.isArray(res) ? res : res.data || [];
+  },
+
+  async create(data: {
+    title: string;
+    content: string;
+    category_id: number;
+    status: 'draft' | 'pending';
+  }) {
+    return apiFetch('/api/articles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: number, data: {
+    title?: string;
+    content?: string;
+    category_id?: number;
+    status?: 'draft' | 'pending';
+  }) {
+    return apiFetch(`/api/articles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: number) {
+    return apiFetch(`/api/articles/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /* =======================
+     ADMIN (MODERATION)
+  ======================= */
+
+  async adminAll() {
+    const res = await apiFetch('/api/admin/articles');
+    return Array.isArray(res) ? res : res.data || [];
+  },
+
+  // Add this method if you want a dedicated pending endpoint
+  async pending() {
+    const res = await apiFetch('/api/articles?status=pending');
+    return Array.isArray(res) ? res : res.data || [];
+  },
+
+  async publish(id: number) {
+    return apiFetch(`/api/admin/articles/${id}/publish`, {
+      method: 'PATCH',
+    });
+  },
+
+  async reject(id: number) {
+    return apiFetch(`/api/admin/articles/${id}/reject`, {
+      method: 'PATCH',
+    });
+  },
+};

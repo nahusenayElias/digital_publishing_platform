@@ -20,9 +20,7 @@ class Article extends Model
     ];
 
     protected $casts = [
-        'published_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'published_at' => 'datetime'
     ];
 
     /**
@@ -58,22 +56,6 @@ class Article extends Model
     }
 
     /**
-     * Scope for rejected articles
-     */
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 'rejected');
-    }
-
-    /**
-     * Scope for draft articles
-     */
-    public function scopeDraft($query)
-    {
-        return $query->where('status', 'draft');
-    }
-
-    /**
      * Boot the model
      */
     protected static function boot()
@@ -87,7 +69,7 @@ class Article extends Model
         });
 
         static::updating(function ($article) {
-            if ($article->isDirty('title') && !$article->isDirty('slug')) {
+            if ($article->isDirty('title') && empty($article->slug)) {
                 $article->slug = \Str::slug($article->title);
             }
         });

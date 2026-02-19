@@ -1,8 +1,8 @@
-// app/categories/page.tsx
 import { CategoryService } from '@/services/category-service';
 
 export default async function CategoriesPage() {
   const categories = await CategoryService.getAll();
+  //console.log(categories);
 
   return (
     <div className="max-w-7xl mx-auto p-8">
