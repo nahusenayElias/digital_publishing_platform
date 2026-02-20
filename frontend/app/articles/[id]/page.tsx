@@ -34,7 +34,6 @@ export default function ArticlePage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 
   useEffect(() => {
-    // Get user from localStorage
     const userStr = localStorage.getItem('user');
     if (userStr) {
       setUser(JSON.parse(userStr));
@@ -53,14 +52,10 @@ export default function ArticlePage() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const res = await fetch(`${API_URL}/api/articles/${params.id}`, {
-        headers
-      });
+      const res = await fetch(`${API_URL}/api/articles/${params.id}`, { headers });
 
       if (!res.ok) {
-        if (res.status === 404) {
-          throw new Error('Article not found');
-        }
+        if (res.status === 404) throw new Error('Article not found');
         throw new Error('Failed to fetch article');
       }
 
@@ -80,15 +75,12 @@ export default function ArticlePage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/articles/${article?.id}/publish`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (res.ok) {
         alert('Article published successfully!');
-        fetchArticle(); // Refresh the article
+        fetchArticle();
       }
     } catch (err) {
       alert('Failed to publish article');
@@ -102,15 +94,12 @@ export default function ArticlePage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/articles/${article?.id}/reject`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (res.ok) {
         alert('Article rejected successfully!');
-        fetchArticle(); // Refresh the article
+        fetchArticle();
       }
     } catch (err) {
       alert('Failed to reject article');
@@ -120,8 +109,8 @@ export default function ArticlePage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto p-8 text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600 mb-4"></div>
-        <p className="text-gray-500">Loading article...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-500 mt-4">Loading article...</p>
       </div>
     );
   }
@@ -136,7 +125,7 @@ export default function ArticlePage() {
             onClick={() => router.push('/articles')}
             className="mt-4 text-sm text-red-600 underline"
           >
-            View all articles
+            Back to Articles
           </button>
         </div>
       </div>
@@ -156,7 +145,7 @@ export default function ArticlePage() {
         ← Back
       </button>
 
-      {/* Status banner for pending articles */}
+      {/* Status banner */}
       {article.status === 'pending' && (
         <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg flex items-center justify-between">
           <span>⏳ This article is pending review</span>
@@ -182,6 +171,12 @@ export default function ArticlePage() {
       {article.status === 'rejected' && (
         <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
           ❌ This article has been rejected
+        </div>
+      )}
+
+      {article.status === 'published' && (
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+          ✅ This article is published
         </div>
       )}
 
