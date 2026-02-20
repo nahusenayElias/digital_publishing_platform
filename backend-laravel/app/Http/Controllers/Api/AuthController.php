@@ -12,78 +12,82 @@ use Illuminate\Validation\Rules\Password;
 class AuthController extends Controller
 {
     public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            "name" => "required|string|max:255",
-            "email" => "required|string|email|max:255|unique:users",
-            "password" => ["required", "confirmed", Password::defaults()],
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        "name" => "required|string|max:255",
+        "email" => "required|string|email|max:255|unique:users",
+        "password" => ["required", "confirmed", Password::defaults()],
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                "message" => "Validation failed",
-                "errors" => $validator->errors()
-            ], 422);
-        }
-
-        $user = User::create([
-            "name" => $request->name,
-            "email" => $request->email,
-            "password" => Hash::make($request->password),
-        ]);
-
-        $token = $user->createToken("auth_token")->plainTextToken;
-
+    if ($validator->fails()) {
         return response()->json([
-            "message" => "Registration successful",
-            "user" => [
-                "id" => $user->id,
-                "name" => $user->name,
-                "email" => $user->email,
-                "is_admin" => $user->isAdmin(),
-                "created_at" => $user->created_at
-            ],
-            "token" => $token
-        ], 201);
+            "message" => "Validation failed",
+            "errors" => $validator->errors()
+        ], 422);
     }
 
-    public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            "email" => "required|email",
-            "password" => "required",
-        ]);
+    // Create user with default role and is_admin false
+    $user = User::create([
+        "name" => $request->name,
+        "email" => $request->email,
+        "password" => Hash::make($request->password),
+        "role" => "user", // Set default role
+        "is_admin" => false // is_admin set to false to avoid all new entrants from gaining admin access
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                "message" => "Validation failed",
-                "errors" => $validator->errors()
-            ], 422);
-        }
+    $token = $user->createToken("auth_token")->plainTextToken;
 
-        $user = User::where("email", $request->email)->first();
+    return response()->json([
+        "message" => "Registration successful",
+        "user" => [
+            "id" => $user->id,
+            "name" => $user->name,
+            "email" => $user->email,
+            "is_admin" => $user->isAdmin(),
+            "role" => $user->role,
+            "created_at" => $user->created_at
+        ],
+        "token" => $token
+    ], 201);
+}
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                "message" => "The provided credentials are incorrect."
-            ], 401);
-        }
+public function login(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        "email" => "required|email",
+        "password" => "required",
+    ]);
 
-        $token = $user->createToken("auth_token")->plainTextToken;
-
+    if ($validator->fails()) {
         return response()->json([
-            "message" => "Login successful",
-            "user" => [
-                "id" => $user->id,
-                "name" => $user->name,
-                "email" => $user->email,
-                "is_admin" => $user->isAdmin(),
-                "created_at" => $user->created_at
-            ],
-            "token" => $token
-        ]);
+            "message" => "Validation failed",
+            "errors" => $validator->errors()
+        ], 422);
     }
 
+    $user = User::where("email", $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json([
+            "message" => "The provided credentials are incorrect."
+        ], 401);
+    }
+
+    $token = $user->createToken("auth_token")->plainTextToken;
+
+    return response()->json([
+        "message" => "Login successful",
+        "user" => [
+            "id" => $user->id,
+            "name" => $user->name,
+            "email" => $user->email,
+            "is_admin" => $user->isAdmin(),
+            "role" => $user->role,
+            "created_at" => $user->created_at
+        ],
+        "token" => $token
+    ]);
+}
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
