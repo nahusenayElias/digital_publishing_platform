@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  is_admin: boolean;
+  role?: string;
+}
+
 interface Article {
   id: number;
   title: string;
@@ -19,6 +27,7 @@ interface Article {
 
 function MyArticlesContent() {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,6 +35,16 @@ function MyArticlesContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 
   useEffect(() => {
+    // Get user info
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        setUser(JSON.parse(userStr));
+      } catch (e) {
+        console.error('Failed to parse user:', e);
+      }
+    }
+    
     fetchMyArticles();
   }, []);
 
@@ -55,6 +74,12 @@ function MyArticlesContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
   };
 
   const getStatusColor = (status: string) => {
@@ -103,14 +128,52 @@ function MyArticlesContent() {
 
   return (
     <div className="max-w-4xl mx-auto p-8">
+      {/* Header with Welcome Message and Logout */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Articles</h1>
-          <p className="text-gray-600 mt-1">Manage your submitted articles</p>
+          <p className="text-gray-600 mt-1">
+            Welcome back, <span className="font-semibold">{user?.name || 'Author'}</span>! 👋
+          </p>
         </div>
+        
+        <div className="flex items-center space-x-4">
+          {/* Admin Panel button (only for admins) */}
+          {(user?.is_admin || user?.role === 'admin') && (
+            <button
+              onClick={() => router.push('/admin')}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            >
+              Admin Panel
+            </button>
+          )}
+          
+          {/* Dashboard button */}
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Dashboard
+          </button>
+          
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Write New Article Button (separate from header) */}
+      <div className="mb-8">
         <Link
           href="/articles/new"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2"
+          className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         >
           <span>+</span> Write New Article
         </Link>
