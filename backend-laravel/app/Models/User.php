@@ -14,6 +14,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role', // Add role to fillable
+        'is_admin', // Add is_admin to fillable
     ];
 
     protected $hidden = [
@@ -24,6 +26,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean', // Cast is_admin to boolean
     ];
 
     /**
@@ -43,20 +46,46 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is admin
-     * You can modify this logic based on your needs
+     * Check if user is admin using both methods
      */
     public function isAdmin(): bool
     {
-        // Method 1: Check by email (simple)
-        $adminEmails = ['admin@example.com', 'max@email.com', 'superadmin@example.com',  'max@email.com'];
+        // First check the database is_admin column
+        if ($this->is_admin) {
+            return true;
+        }
         
-        // Method 2: If you have a role column in users table
-        // return $this->role === 'admin';
+        // Then check the role column
+        if ($this->role === 'admin') {
+            return true;
+        }
         
-        // Method 3: Check if user has admin flag
-        // return $this->is_admin === true;
-        
+        // Finally, fallback to email check for backward compatibility
+        $adminEmails = ['admin@example.com', 'max@email.com'];
         return in_array($this->email, $adminEmails);
+    }
+
+    /**
+     * Check if user is author
+     */
+    public function isAuthor(): bool
+    {
+        return $this->role === 'author';
+    }
+
+    /**
+     * Check if user is regular user
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    /**
+     * Get user's role display name
+     */
+    public function getRoleDisplayAttribute(): string
+    {
+        return ucfirst($this->role ?? 'user');
     }
 }

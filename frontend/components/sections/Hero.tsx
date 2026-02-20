@@ -19,11 +19,11 @@ export function Hero() {
               Content
             </span>
             <br />
-            with <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">Drupal + Next.js</span>
+            with <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">Laravel + Next.js</span>
           </h1>
           
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            A powerful, decoupled publishing platform combining Drupal's robust content 
+            A powerful, decoupled publishing platform combining Laravel's robust content 
             management with Next.js's lightning-fast performance.
           </p>
           
