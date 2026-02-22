@@ -80,6 +80,8 @@ A full-stack digital publishing application built with Laravel (backend API) and
 
 ### 📁 Project Structure
 
+```bash
+
 digital_publishing_platform/
 ├── backend-laravel/           # Laravel backend
 │   ├── app/
@@ -135,6 +137,7 @@ digital_publishing_platform/
     │   └── category-service.ts # Category API calls
     └── package.json            # Dependencies
 
+```
 
     
 ### Laravel commands:
